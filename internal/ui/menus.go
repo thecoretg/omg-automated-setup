@@ -49,13 +49,6 @@ func UserRoleMenu(sv *shared.SetupVars) *huh.Group {
 				huh.NewOption("Dev", "admin"),
 			).
 			Value(&sv.UserRole),
-		huh.NewSelect[bool]().
-			Title("Delete spare user, if it exists?").
-			Options(
-				huh.NewOption("Yes", true).Selected(true),
-				huh.NewOption("No", false),
-			).
-			Value(&sv.DeleteSpare),
 	)
 }
 
