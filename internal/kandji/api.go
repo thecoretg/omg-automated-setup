@@ -167,15 +167,15 @@ func DeleteUser(sv *shared.SetupVars, c *config.Config, user string) error {
 	return nil
 }
 
-func GetComputerDetails(sv *shared.SetupVars, c *config.Config) (DeviceDetails, error) {
+func GetComputerDetails(id string, conf *config.Config) (DeviceDetails, error) {
 	// Call the Kandji API to verify the new computer details
 	reqVars := RequestVars{
 		Method:   "GET",
-		Endpoint: fmt.Sprintf("devices/%s", sv.DeviceID),
+		Endpoint: fmt.Sprintf("devices/%s", id),
 		Payload:  "",
 	}
 
-	resp, err := ApiRequest(reqVars, c)
+	resp, err := ApiRequest(reqVars, conf)
 	if err != nil {
 		return DeviceDetails{}, fmt.Errorf("error verifying new computer details: %v", err)
 	}

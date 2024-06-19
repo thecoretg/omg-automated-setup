@@ -7,33 +7,6 @@ import (
 	"github.com/thecoretg/omg-user-automation/internal/shared"
 )
 
-func RunMenu(sv *shared.SetupVars) error {
-	form := huh.NewForm(
-		SetupTypeMenu(sv),
-	)
-
-	if err := form.WithTheme(huh.ThemeBase()).Run(); err != nil {
-		return fmt.Errorf("error with form: %v", err)
-	}
-
-	switch sv.SetupType {
-	case "Spare":
-		// Run the spare setup menu
-		return fmt.Errorf("spare setup not implemented yet")
-
-	case "User":
-		// Run the user setup menu
-		if err := RunUserMenu(sv); err != nil {
-			return fmt.Errorf("error running user menu: %v", err)
-		}
-		return nil
-
-	default:
-		return fmt.Errorf("invalid setup type: %s", sv.SetupType)
-
-	}
-}
-
 func RunUserMenu(sv *shared.SetupVars) error {
 	form := huh.NewForm(
 		InitialUserMenu(sv),
@@ -41,19 +14,28 @@ func RunUserMenu(sv *shared.SetupVars) error {
 	)
 
 	if err := form.WithTheme(huh.ThemeBase()).Run(); err != nil {
-		return fmt.Errorf("error with form: %v", err)
+		return fmt.Errorf("error with user setup form: %v", err)
 	}
 
 	return nil
 }
-func SetupTypeMenu(sv *shared.SetupVars) *huh.Group {
-	return huh.NewGroup(
-		huh.NewSelect[string]().
-			Title("Setup Type").
-			Options(
-				huh.NewOptions("Spare", "User")...).
-			Value(&sv.SetupType),
+
+func SetupTypeMenu(sv *shared.SetupVars) error {
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("Setup Type").
+				Options(
+					huh.NewOptions("Spare", "User")...).
+				Value(&sv.SetupType),
+		),
 	)
+
+	if err := form.WithTheme(huh.ThemeBase()).Run(); err != nil {
+		return fmt.Errorf("error with setup type form: %v", err)
+	}
+
+	return nil
 }
 
 func InitialUserMenu(sv *shared.SetupVars) *huh.Group {

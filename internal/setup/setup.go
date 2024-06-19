@@ -28,19 +28,15 @@ func RunProgram() {
 		os.Exit(1)
 	}
 
-	// Remove the config file after running
-	defer os.Remove("/tmp/config.json") // TODO: Needed?
-
-	// Get the Kandji variables from the plist
-	var kVar kandji.KandjiProfileVars = kandji.KandjiProfileVars{}
-	kVar, err = kandji.GetPlistInfo()
+	// Get the Kandji device ID from the plist
+	devId, err := kandji.GetDeviceID()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	// Get the Mac Model for the device name
-	model, err := mac.GetModel()
+	// Use device ID to get all of the initial details from the Kandji API
+	initialDetails, err := kandji.GetComputerDetails(devId, config)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -48,10 +44,11 @@ func RunProgram() {
 
 	// Initialize setup variables
 	var sVar shared.SetupVars = shared.SetupVars{
-		DeviceID:     kVar.DeviceID,
-		DeviceName:   "",
-		FullName:     kVar.FullName,
-		Username:     mac.CreateShortname(kVar.FullName),
+		SetupType:    "",
+		DeviceID:     initialDetails.DeviceID,
+		DeviceName:   initialDetails.DeviceName,
+		FullName:     initialDetails.User.Name,
+		Username:     mac.CreateShortname(initialDetails.User.Name),
 		TempPassword: config.TempPassword,
 		UserRole:     "standard",
 		Blueprint:    "",
@@ -59,72 +56,90 @@ func RunProgram() {
 		DeleteSpare:  false,
 	}
 
-	// Set the device name based on the user's full name and the device model, if they are not empty
-	if kVar.FullName != "" && model != "" {
-		sVar.DeviceName = fmt.Sprintf("%s %s", kVar.FullName, model)
-	}
-
-	// Verify there is a user assigned to the device
-	if sVar.FullName == "" {
-		fmt.Println("No user assigned to device - please assign a user in the Kandji portal.")
-		fmt.Println("If a user is already assigned, sync Kandji via Self Service or sudo kandji run. Then, try again.")
-		os.Exit(1)
-	}
-
-	// Update setup vars with user input
-	err = ui.RunMenu(&sVar)
+	// Run setup menu to determine Spare or User
+	err = ui.SetupTypeMenu(&sVar)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
+	switch sVar.SetupType {
+	case "Spare":
+		// If the user selects Spare, run the spare setup which doesnt exist yet
+		fmt.Println("Spare setup not yet implemented.")
+		os.Exit(0)
+	case "User":
+		// If the user selects User, run user setup menu
+		summary, err := runUserSetup(config, &sVar)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Println(summary)
+	}
+}
+
+func runUserSetup(conf *config.Config, sVar *shared.SetupVars) (string, error) {
+
+	// Get the Mac Model for the device name
+	model, err := mac.GetModel()
+	if err != nil {
+		return "", fmt.Errorf("error getting Mac model: %v", err)
+	}
+
+	// Set the device name based on the user's full name and the device model, if they are not empty
+	if sVar.FullName != "" && model != "" {
+		sVar.DeviceName = fmt.Sprintf("%s %s", sVar.FullName, model)
+	}
+
+	err = ui.RunUserMenu(sVar)
+	if err != nil {
+		return "", fmt.Errorf("error running user setup menu: %v", err)
+	}
+
+	// Make the user with the shell script with output
+	createResult, err := mac.CreateUser(sVar)
+	if err != nil {
+		return "", fmt.Errorf("error creating user: %v", err)
+	} else { // If the user was created, print the output
+		fmt.Println(createResult)
+	}
+
 	// Determine blueprint based on user role
-	devBp := config.DevBlueprint
-	standardBp := config.StandardBlueprint
+	devBp := conf.DevBlueprint
+	standardBp := conf.StandardBlueprint
 	if sVar.UserRole == "dev" {
 		sVar.Blueprint = devBp
 	} else {
 		sVar.Blueprint = standardBp
 	}
 
-	// Make the user with the shell script with output
-	createResult, err := mac.CreateUser(&sVar)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	fmt.Println(createResult)
-
 	// Send the API request to change the blueprint
-	err = kandji.UpdateBlueprint(&sVar, config)
+	err = kandji.UpdateBlueprint(sVar, conf)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return "", fmt.Errorf("error updating blueprint: %v", err)
 	}
 
 	// Send the API request to change the computer name
-	err = kandji.UpdateComputerName(&sVar, config)
+	err = kandji.UpdateComputerName(sVar, conf)
 	if err != nil {
-		fmt.Println(err)
+		return "", fmt.Errorf("error updating computer name: %v", err)
 	}
 
 	// Delete the spare user if the user selected to do so
 	if sVar.DeleteSpare {
-		err = kandji.DeleteUser(&sVar, config, "spare")
+		err = kandji.DeleteUser(sVar, conf, "spare")
 		if err != nil {
-			fmt.Println(err)
+			return "", fmt.Errorf("error deleting spare user: %v", err)
 		}
 	}
 
 	// Verify the new computer details with the Kandji API
-	details, err := kandji.GetComputerDetails(&sVar, config)
+	details, err := kandji.GetComputerDetails(sVar.DeviceID, conf)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return "", fmt.Errorf("error getting computer details: %v", err)
 	}
 
 	summaryStr := fmt.Sprintf("Assigned User: %s\nBlueprint: %s\nDevice Name: %s\n", details.User.Name, details.BlueprintName, details.DeviceName)
-	fmt.Println(summaryStr)
-
+	return summaryStr, nil
 }
