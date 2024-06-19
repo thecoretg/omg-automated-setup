@@ -18,7 +18,7 @@ func RunSetupTypeMenu(sv *shared.SetupVars) error {
 		),
 	)
 
-	if err := form.WithTheme(huh.ThemeBase()).WithAccessible(true).Run(); err != nil {
+	if err := form.WithTheme(huh.ThemeBase()).Run(); err != nil {
 		return fmt.Errorf("error with setup type form: %v", err)
 	}
 
@@ -32,7 +32,7 @@ func RunUserMenu(sv *shared.SetupVars) error {
 		UserConfirmMenu(sv),
 	)
 
-	if err := form.WithTheme(huh.ThemeBase()).WithAccessible(true).Run(); err != nil {
+	if err := form.WithTheme(huh.ThemeBase()).Run(); err != nil {
 		return fmt.Errorf("error with user setup form: %v", err)
 	}
 
