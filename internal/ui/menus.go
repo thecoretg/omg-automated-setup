@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/huh"
-	"github.com/thecoretg/omg-user-automation/internal/types"
+	"github.com/thecoretg/omg-user-automation/internal/shared"
 )
 
-func RunMenu(sv *types.SetupVars) error {
+func RunMenu(sv *shared.SetupVars) error {
 	form := huh.NewForm(
 		SetupTypeMenu(sv),
 	)
@@ -34,7 +34,7 @@ func RunMenu(sv *types.SetupVars) error {
 	}
 }
 
-func RunUserMenu(sv *types.SetupVars) error {
+func RunUserMenu(sv *shared.SetupVars) error {
 	form := huh.NewForm(
 		InitialUserMenu(sv),
 		UserConfirmMenu(sv),
@@ -46,7 +46,7 @@ func RunUserMenu(sv *types.SetupVars) error {
 
 	return nil
 }
-func SetupTypeMenu(sv *types.SetupVars) *huh.Group {
+func SetupTypeMenu(sv *shared.SetupVars) *huh.Group {
 	return huh.NewGroup(
 		huh.NewSelect[string]().
 			Title("Setup Type").
@@ -56,7 +56,7 @@ func SetupTypeMenu(sv *types.SetupVars) *huh.Group {
 	)
 }
 
-func InitialUserMenu(sv *types.SetupVars) *huh.Group {
+func InitialUserMenu(sv *shared.SetupVars) *huh.Group {
 	// User inputs role type and if they want to delete the spare user (if it exists)
 	return huh.NewGroup(
 		huh.NewSelect[string]().
@@ -76,7 +76,7 @@ func InitialUserMenu(sv *types.SetupVars) *huh.Group {
 	)
 }
 
-func UserConfirmMenu(sv *types.SetupVars) *huh.Group {
+func UserConfirmMenu(sv *shared.SetupVars) *huh.Group {
 	confirmMsg := fmt.Sprintf("Computer Name: %s\nFull Name: %s\nUsername: %s\nRole: %s\n", sv.DeviceName, sv.FullName, sv.Username, sv.UserRole)
 	return huh.NewGroup(
 		huh.NewSelect[bool]().

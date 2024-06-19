@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/thecoretg/omg-user-automation/internal/types"
+	"github.com/thecoretg/omg-user-automation/internal/config"
+	"github.com/thecoretg/omg-user-automation/internal/shared"
 )
 
 type RequestVars struct {
@@ -68,7 +69,7 @@ type DeleteUserPayload struct {
 	UserName       string `json:"UserName"`
 }
 
-func ApiRequest(apiVars RequestVars, c *types.Config) (string, error) {
+func ApiRequest(apiVars RequestVars, c *config.Config) (string, error) {
 	// Build and run Kandji API request using RequestVars struct
 
 	apiToken := c.ApiToken
@@ -109,7 +110,7 @@ func ApiRequest(apiVars RequestVars, c *types.Config) (string, error) {
 	return string(body), nil
 }
 
-func UpdateBlueprint(sv *types.SetupVars, c *types.Config) error {
+func UpdateBlueprint(sv *shared.SetupVars, c *config.Config) error {
 	reqVars := RequestVars{
 		Method:   "PATCH",
 		Endpoint: fmt.Sprintf("devices/%s", sv.DeviceID),
@@ -124,7 +125,7 @@ func UpdateBlueprint(sv *types.SetupVars, c *types.Config) error {
 	return nil
 }
 
-func UpdateComputerName(sv *types.SetupVars, c *types.Config) error {
+func UpdateComputerName(sv *shared.SetupVars, c *config.Config) error {
 
 	reqVars := RequestVars{
 		Method:   "POST",
@@ -140,7 +141,7 @@ func UpdateComputerName(sv *types.SetupVars, c *types.Config) error {
 	return nil
 }
 
-func DeleteUser(sv *types.SetupVars, c *types.Config, user string) error {
+func DeleteUser(sv *shared.SetupVars, c *config.Config, user string) error {
 	payloadStruct := DeleteUserPayload{
 		DeleteAllUsers: false,
 		ForceDeletion:  false,
@@ -166,7 +167,7 @@ func DeleteUser(sv *types.SetupVars, c *types.Config, user string) error {
 	return nil
 }
 
-func GetComputerDetails(sv *types.SetupVars, c *types.Config) (DeviceDetails, error) {
+func GetComputerDetails(sv *shared.SetupVars, c *config.Config) (DeviceDetails, error) {
 	// Call the Kandji API to verify the new computer details
 	reqVars := RequestVars{
 		Method:   "GET",
