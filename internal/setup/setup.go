@@ -17,7 +17,7 @@ func RunProgram() {
 	// Check if root - if not, exit. We'll need root to create a user
 	err := mac.CheckRoot()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("This command must be run as root. Please use sudo or switch to the root user.")
 		os.Exit(1)
 	}
 
@@ -46,7 +46,6 @@ func RunProgram() {
 	var sVar shared.SetupVars = shared.SetupVars{
 		SetupType:    "",
 		DeviceID:     initialDetails.DeviceID,
-		DeviceName:   initialDetails.DeviceName,
 		FullName:     initialDetails.User.Name,
 		Username:     mac.CreateShortname(initialDetails.User.Name),
 		TempPassword: config.TempPassword,
@@ -57,7 +56,7 @@ func RunProgram() {
 	}
 
 	// Run setup menu to determine Spare or User
-	err = ui.SetupTypeMenu(&sVar)
+	err = ui.RunSetupTypeMenu(&sVar)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -81,18 +80,7 @@ func RunProgram() {
 
 func runUserSetup(conf *config.Config, sVar *shared.SetupVars) (string, error) {
 
-	// Get the Mac Model for the device name
-	model, err := mac.GetModel()
-	if err != nil {
-		return "", fmt.Errorf("error getting Mac model: %v", err)
-	}
-
-	// Set the device name based on the user's full name and the device model, if they are not empty
-	if sVar.FullName != "" && model != "" {
-		sVar.DeviceName = fmt.Sprintf("%s %s", sVar.FullName, model)
-	}
-
-	err = ui.RunUserMenu(sVar)
+	err := ui.RunUserMenu(sVar)
 	if err != nil {
 		return "", fmt.Errorf("error running user setup menu: %v", err)
 	}
@@ -120,12 +108,6 @@ func runUserSetup(conf *config.Config, sVar *shared.SetupVars) (string, error) {
 		return "", fmt.Errorf("error updating blueprint: %v", err)
 	}
 
-	// Send the API request to change the computer name
-	err = kandji.UpdateComputerName(sVar, conf)
-	if err != nil {
-		return "", fmt.Errorf("error updating computer name: %v", err)
-	}
-
 	// Delete the spare user if the user selected to do so
 	if sVar.DeleteSpare {
 		err = kandji.DeleteUser(sVar, conf, "spare")
@@ -140,6 +122,6 @@ func runUserSetup(conf *config.Config, sVar *shared.SetupVars) (string, error) {
 		return "", fmt.Errorf("error getting computer details: %v", err)
 	}
 
-	summaryStr := fmt.Sprintf("Assigned User: %s\nBlueprint: %s\nDevice Name: %s\n", details.User.Name, details.BlueprintName, details.DeviceName)
+	summaryStr := fmt.Sprintf("Assigned User: %s\nBlueprint: %s\n", details.User.Name, details.BlueprintName)
 	return summaryStr, nil
 }

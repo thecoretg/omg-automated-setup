@@ -125,22 +125,6 @@ func UpdateBlueprint(sv *shared.SetupVars, c *config.Config) error {
 	return nil
 }
 
-func UpdateComputerName(sv *shared.SetupVars, c *config.Config) error {
-
-	reqVars := RequestVars{
-		Method:   "POST",
-		Endpoint: fmt.Sprintf("devices/%s/action/setname", sv.DeviceID),
-		Payload:  fmt.Sprintf(`{"DeviceName": "%s"}`, sv.DeviceName),
-	}
-
-	_, err := ApiRequest(reqVars, c)
-	if err != nil {
-		return fmt.Errorf("error changing computer name: %v", err)
-	}
-
-	return nil
-}
-
 func DeleteUser(sv *shared.SetupVars, c *config.Config, user string) error {
 	payloadStruct := DeleteUserPayload{
 		DeleteAllUsers: false,

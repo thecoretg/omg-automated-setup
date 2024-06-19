@@ -1,7 +1,6 @@
 package mac
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -30,27 +29,6 @@ func CreateShortname(fullName string) string {
 	loweCaseName := strings.ToLower(fullName)
 	username := strings.ReplaceAll(loweCaseName, " ", "")
 	return username
-}
-
-func GetModel() (string, error) {
-	// Gets the Mac Model name, such as "MacBook Pro" or "Mac Mini"
-	cmdString := `/usr/sbin/system_profiler SPHardwareDataType | awk -F": " '/Model Name/ {print $2}'`
-	cmd := exec.Command("bash", "-c", cmdString)
-
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		return "", fmt.Errorf("error running mac model retrieval command: %v", err)
-	}
-
-	macModel := out.String()
-	if macModel == "" {
-		return "", errors.New("computer name is empty")
-	}
-
-	return macModel, nil
-
 }
 
 func CheckRoot() error {
