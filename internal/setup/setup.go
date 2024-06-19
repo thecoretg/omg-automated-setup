@@ -96,7 +96,7 @@ func runUserSetup(conf *config.Config, sVar *shared.SetupVars) (string, error) {
 	// Determine blueprint based on user role
 	devBp := conf.DevBlueprint
 	standardBp := conf.StandardBlueprint
-	if sVar.UserRole == "dev" {
+	if sVar.UserRole == "admin" {
 		sVar.Blueprint = devBp
 	} else {
 		sVar.Blueprint = standardBp
