@@ -45,7 +45,7 @@ type UpdateResponse struct {
 	SerialNumber   string `json:"serial_number"`
 	Platform       string `json:"platform"`
 	OSVersion      string `json:"os_version"`
-	User           User   `json:"user"`
+	User           *User  `json:"user,omitempty"`
 	AssetTag       string `json:"asset_tag"`
 	BlueprintID    string `json:"blueprint_id"`
 	MdmEnabled     bool   `json:"mdm_enabled"`
@@ -57,10 +57,7 @@ type UpdateResponse struct {
 }
 
 type User struct {
-	Email      string `json:"email"`
-	Name       string `json:"name"`
-	ID         int64  `json:"id"`
-	IsArchived bool   `json:"is_archived"`
+	Name string `json:"name,omitempty"`
 }
 
 type DeleteUserPayload struct {
@@ -172,4 +169,17 @@ func GetComputerDetails(id string, conf *config.Config) (DeviceDetails, error) {
 
 	return deviceDetails, nil
 
+}
+
+func (u *User) UnmarshalJSON(data []byte) error {
+	// Check if the user is an empty string
+	if string(data) == `""` {
+		*u = User{}
+		return nil
+	}
+
+	// Otherwise unmarshal the JSON as normal
+	type Alias User
+	aux := &struct{ *Alias }{Alias: (*Alias)(u)}
+	return json.Unmarshal(data, &aux)
 }

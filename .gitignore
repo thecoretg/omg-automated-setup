@@ -1,3 +1,4 @@
 .env
 .DS_Store
 tests/testconfig.json
+tests/unmarshal_test.go
