@@ -27,7 +27,7 @@ type DeviceDetails struct {
 	OSVersion                  string `json:"os_version"`
 	SupplementalBuildVersion   string `json:"supplemental_build_version"`
 	SupplementalOSVersionExtra string `json:"supplemental_os_version_extra"`
-	User                       User   `json:"user"`
+	User                       *User  `json:"user,omitempty"`
 	AssetTag                   string `json:"asset_tag"`
 	BlueprintID                string `json:"blueprint_id"`
 	MdmEnabled                 bool   `json:"mdm_enabled"`
