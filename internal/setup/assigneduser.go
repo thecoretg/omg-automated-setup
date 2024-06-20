@@ -68,7 +68,7 @@ func CreateAssignedUser(conf *config.Config, initialDetails *kandji.DeviceDetail
 
 	case false:
 		// If the user does not exist, create the user
-		_, err := mac.CreateUser(&sVar)
+		err := mac.CreateUser(&sVar)
 		if err != nil {
 			return "", fmt.Errorf("error creating user: %v", err)
 		}

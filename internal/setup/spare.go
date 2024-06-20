@@ -60,11 +60,9 @@ func CreateSpareUser(conf *config.Config, initialDetails *kandji.DeviceDetails) 
 	}
 
 	// Make the spare user with the shell script with output
-	createResult, err := mac.CreateUser(&sVar)
+	err := mac.CreateUser(&sVar)
 	if err != nil {
 		return "", fmt.Errorf("error creating user: %v", err)
-	} else { // If the user was created, print the output
-		fmt.Println(createResult)
 	}
 
 	userInstr := "Spare User (spareuser) created with default password.\nIMPORTANT: Log out of the current user and log in to the spare user to ensure it gets secure token before shutting down."

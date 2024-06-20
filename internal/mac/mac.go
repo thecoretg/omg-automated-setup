@@ -10,7 +10,7 @@ import (
 	"github.com/thecoretg/omg-user-automation/internal/shared"
 )
 
-func CreateUser(sv *shared.SetupVars) (string, error) {
+func CreateUser(sv *shared.SetupVars) error {
 	// If UserRole is "admin", create the user with the admin role
 	// If UserRole is "standard", create the user with the standard role
 	cmd := exec.Command("sysadminctl", "-addUser", sv.Username, "-password", sv.Password, "-fullName", sv.FullName)
@@ -20,10 +20,10 @@ func CreateUser(sv *shared.SetupVars) (string, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("error creating user: %v", err)
+		return fmt.Errorf("error creating user: %v", err)
 	}
 
-	return fmt.Sprintf("User %s created as %s", sv.Username, sv.UserRole), nil
+	return nil
 }
 
 func CreateShortname(fullName string) string {
