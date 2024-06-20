@@ -12,6 +12,7 @@ type Config struct {
 	StandardBlueprint string `json:"KANDJI_STANDARD_BLUEPRINT"`
 	DevBlueprint      string `json:"KANDJI_DEV_BLUEPRINT"`
 	TempPassword      string `json:"TEMP_PASSWORD"`
+	SparePassword     string `json:"SPARE_PASSWORD"`
 }
 
 func Load(path string) (*Config, error) {

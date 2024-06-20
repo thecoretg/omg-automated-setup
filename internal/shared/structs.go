@@ -2,14 +2,12 @@ package shared
 
 type SetupVars struct {
 	// User options for the setup menu
-	SetupType     string
-	DeviceID      string
-	FullName      string
-	Username      string
-	TempPassword  string
-	SparePassword string
-	UserRole      string
-	Confirm       bool
-	Blueprint     string
-	DeleteSpare   bool
+	DeviceID    string
+	FullName    string
+	Username    string
+	Password    string
+	UserRole    string
+	Confirm     bool
+	Blueprint   string
+	DeleteSpare bool
 }

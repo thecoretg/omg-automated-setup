@@ -12,7 +12,7 @@ import (
 func CreateUser(sv *shared.SetupVars) (string, error) {
 	// If UserRole is "admin", create the user with the admin role
 	// If UserRole is "standard", create the user with the standard role
-	cmd := exec.Command("sysadminctl", "-addUser", sv.Username, "-password", sv.TempPassword, "-fullName", sv.FullName)
+	cmd := exec.Command("sysadminctl", "-addUser", sv.Username, "-password", sv.Password, "-fullName", sv.FullName)
 	if sv.UserRole == "admin" {
 		cmd.Args = append(cmd.Args, "-admin")
 	}

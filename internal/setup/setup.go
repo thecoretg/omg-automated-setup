@@ -42,34 +42,43 @@ func RunProgram() {
 		os.Exit(1)
 	}
 
-	// Initialize setup variables
-	var sVar shared.SetupVars = shared.SetupVars{
-		SetupType:    "",
-		DeviceID:     initialDetails.DeviceID,
-		FullName:     initialDetails.User.Name,
-		Username:     mac.CreateShortname(initialDetails.User.Name),
-		TempPassword: config.TempPassword,
-		UserRole:     "standard",
-		Blueprint:    "",
-		Confirm:      false,
-		DeleteSpare:  false,
-	}
+	switch initialDetails.User.Name {
+	case "":
+		title := "No assigned user in Kandji. Continue with Spare User setup?"
+		// Run yes/no menu to confirm
+		confirm, err := ui.YesNoMenu(title)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 
-	// Run setup menu to determine Spare or User
-	err = ui.RunSetupTypeMenu(&sVar)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+		if !confirm {
+			fmt.Println("Exiting program.")
+			os.Exit(0)
+		}
 
-	switch sVar.SetupType {
-	case "Spare":
-		// If the user selects Spare, run the spare setup which doesnt exist yet
-		fmt.Println("Spare setup not yet implemented.")
-		os.Exit(0)
-	case "User":
-		// If the user selects User, run user setup menu
-		summary, err := runUserSetup(config, &sVar)
+		summary, err := RunSpareSetup(config, &initialDetails)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Println(summary)
+
+	default:
+		// If assigned user is not empty, run the user setup
+		title := fmt.Sprintf("Assigned user detected in Kandji: %s. Continue with user setup?", initialDetails.User.Name)
+		confirm, err := ui.YesNoMenu(title)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		if !confirm {
+			fmt.Println("Exiting program.")
+			os.Exit(0)
+		}
+
+		summary, err := RunUserSetup(config, &initialDetails)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -78,19 +87,55 @@ func RunProgram() {
 	}
 }
 
-func runUserSetup(conf *config.Config, sVar *shared.SetupVars) (string, error) {
+func RunSpareSetup(conf *config.Config, initialDetails *kandji.DeviceDetails) (string, error) {
+	// Initialize setup variables
+	var sVar shared.SetupVars = shared.SetupVars{
+		DeviceID:    initialDetails.DeviceID,
+		FullName:    "Spare User",
+		Username:    "spareuser",
+		Password:    conf.SparePassword,
+		UserRole:    "standard",
+		Blueprint:   "",
+		Confirm:     false,
+		DeleteSpare: false,
+	}
 
-	err := ui.RunUserMenu(sVar)
+	// Make the spare user with the shell script with output
+	createResult, err := mac.CreateUser(&sVar)
+	if err != nil {
+		return "", fmt.Errorf("error creating user: %v", err)
+	} else { // If the user was created, print the output
+		fmt.Println(createResult)
+	}
+
+	userInstr := "Spare User (spareuser) created with default password.\nIMPORTANT: Log out of the current user and log in to the spare user to ensure it gets secure token before shutting down."
+	return userInstr, nil
+
+}
+
+func RunUserSetup(conf *config.Config, initialDetails *kandji.DeviceDetails) (string, error) {
+
+	// Initialize setup variables
+	var sVar shared.SetupVars = shared.SetupVars{
+		DeviceID:    initialDetails.DeviceID,
+		FullName:    initialDetails.User.Name,
+		Username:    mac.CreateShortname(initialDetails.User.Name),
+		Password:    conf.TempPassword,
+		UserRole:    "standard",
+		Blueprint:   "",
+		Confirm:     false,
+		DeleteSpare: false,
+	}
+
+	err := ui.RunUserMenu(&sVar)
 	if err != nil {
 		return "", fmt.Errorf("error running user setup menu: %v", err)
 	}
 
 	// Make the user with the shell script with output
-	createResult, err := mac.CreateUser(sVar)
+	_, err = mac.CreateUser(&sVar)
 	if err != nil {
 		return "", fmt.Errorf("error creating user: %v", err)
-	} else { // If the user was created, print the output
-		fmt.Println(createResult)
 	}
 
 	// Determine blueprint based on user role
@@ -103,14 +148,14 @@ func runUserSetup(conf *config.Config, sVar *shared.SetupVars) (string, error) {
 	}
 
 	// Send the API request to change the blueprint
-	err = kandji.UpdateBlueprint(sVar, conf)
+	err = kandji.UpdateBlueprint(&sVar, conf)
 	if err != nil {
 		return "", fmt.Errorf("error updating blueprint: %v", err)
 	}
 
 	// Delete the spare user if the user selected to do so
 	if sVar.DeleteSpare {
-		err = kandji.DeleteUser(sVar, conf, "spare")
+		err = kandji.DeleteUser(&sVar, conf, "spare")
 		if err != nil {
 			return "", fmt.Errorf("error deleting spare user: %v", err)
 		}
@@ -122,6 +167,7 @@ func runUserSetup(conf *config.Config, sVar *shared.SetupVars) (string, error) {
 		return "", fmt.Errorf("error getting computer details: %v", err)
 	}
 
-	summaryStr := fmt.Sprintf("Assigned User: %s\nBlueprint: %s\n", details.User.Name, details.BlueprintName)
+	userInstr := fmt.Sprintf("User %s (%s user) created with default password.\nIMPORTANT: Log out of the current user and log in to the spare user to ensure it gets secure token before shutting down.", sVar.Username, sVar.UserRole)
+	summaryStr := fmt.Sprintf("Assigned User: %s\nBlueprint: %s\n\n%s\n", details.User.Name, details.BlueprintName, userInstr)
 	return summaryStr, nil
 }

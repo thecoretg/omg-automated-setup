@@ -7,22 +7,44 @@ import (
 	"github.com/thecoretg/omg-user-automation/internal/shared"
 )
 
-func RunSetupTypeMenu(sv *shared.SetupVars) error {
+func RunSetupTypeMenu() (string, error) {
+	var setupType string
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Title("Setup Type").
 				Options(
 					huh.NewOptions("Spare", "User")...).
-				Value(&sv.SetupType),
+				Value(&setupType),
 		),
 	)
 
 	if err := form.WithTheme(huh.ThemeBase()).Run(); err != nil {
-		return fmt.Errorf("error with setup type form: %v", err)
+		return "", fmt.Errorf("error with setup type form: %v", err)
 	}
 
-	return nil
+	return setupType, nil
+}
+
+func YesNoMenu(title string) (bool, error) {
+	var confirm bool
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[bool]().
+				Title(title).
+				Options(
+					huh.NewOption("Yes", true).Selected(true),
+					huh.NewOption("No", false),
+				).
+				Value(&confirm),
+		),
+	)
+
+	if err := form.WithTheme(huh.ThemeBase()).Run(); err != nil {
+		return false, fmt.Errorf("error with yes/no form: %v", err)
+	}
+
+	return confirm, nil
 }
 
 func RunUserMenu(sv *shared.SetupVars) error {
