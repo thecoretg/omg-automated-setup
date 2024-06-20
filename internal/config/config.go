@@ -6,6 +6,9 @@ import (
 	"os"
 )
 
+// Configuration struct and function for loading externally provided config file,
+// which contains needed secrets and passwords for the program to run
+
 type Config struct {
 	ApiToken          string `json:"KANDJI_API_TOKEN"`
 	ApiUrl            string `json:"KANDJI_API_URL"`

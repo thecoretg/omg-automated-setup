@@ -15,6 +15,7 @@ type KandjiProfileVars struct {
 }
 
 func GetDeviceID() (string, error) {
+	// Get the DeviceID from the Kandji global variables plist
 	// Get the plist file from the Kandji variables
 	plistPath := "/Library/Managed Preferences/io.kandji.globalvariables.plist"
 

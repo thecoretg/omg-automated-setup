@@ -7,26 +7,8 @@ import (
 	"github.com/thecoretg/omg-user-automation/internal/shared"
 )
 
-func RunSetupTypeMenu() (string, error) {
-	var setupType string
-	form := huh.NewForm(
-		huh.NewGroup(
-			huh.NewSelect[string]().
-				Title("Setup Type").
-				Options(
-					huh.NewOptions("Spare", "User")...).
-				Value(&setupType),
-		),
-	)
-
-	if err := form.WithTheme(huh.ThemeBase()).Run(); err != nil {
-		return "", fmt.Errorf("error with setup type form: %v", err)
-	}
-
-	return setupType, nil
-}
-
 func YesNoMenu(title string) (bool, error) {
+	// User inputs yes or no, can be used for anything that requires a yes or no answer
 	var confirm bool
 	form := huh.NewForm(
 		huh.NewGroup(
@@ -48,6 +30,7 @@ func YesNoMenu(title string) (bool, error) {
 }
 
 func RunUserMenu(sv *shared.SetupVars) error {
+	// Run the user setup form
 	userForm := huh.NewForm(
 		UserRoleMenu(sv),
 		DeleteSpareMenu(sv),
@@ -66,7 +49,7 @@ func RunUserMenu(sv *shared.SetupVars) error {
 }
 
 func UserRoleMenu(sv *shared.SetupVars) *huh.Group {
-	// User inputs role type and if they want to delete the spare user (if it exists)
+	// User inputs role type
 	return huh.NewGroup(
 		huh.NewSelect[string]().
 			Title("Will the new user be standard or dev?").
@@ -79,7 +62,7 @@ func UserRoleMenu(sv *shared.SetupVars) *huh.Group {
 }
 
 func DeleteSpareMenu(sv *shared.SetupVars) *huh.Group {
-	// User inputs role type and if they want to delete the spare user (if it exists)
+	// User inputs if they want to delete the spare user (if it exists)
 	return huh.NewGroup(
 		huh.NewSelect[bool]().
 			Title("Delete spare user, if it exists?").
@@ -92,6 +75,7 @@ func DeleteSpareMenu(sv *shared.SetupVars) *huh.Group {
 }
 
 func UserConfirmMenu(sv *shared.SetupVars) *huh.Form {
+	// User confirms the information is correct after previous inputs
 	confirmMsg := fmt.Sprintf("Full Name: %s\nUsername: %s\nRole: %s\n", sv.FullName, sv.Username, sv.UserRole)
 	return huh.NewForm(
 		huh.NewGroup(

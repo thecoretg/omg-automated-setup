@@ -12,13 +12,14 @@ import (
 )
 
 type RequestVars struct {
-	// For Kandji API request
+	// For all Kandji API requests
 	Method   string
 	Endpoint string
 	Payload  string
 }
 
 type DeviceDetails struct {
+	// Return struct for Kandji device details API request
 	DeviceID                   string `json:"device_id"`
 	DeviceName                 string `json:"device_name"`
 	Model                      string `json:"model"`
@@ -38,7 +39,13 @@ type DeviceDetails struct {
 	BlueprintName              string `json:"blueprint_name"`
 }
 
+type User struct {
+	// User struct for Kandji device details API request
+	Name string `json:"name,omitempty"`
+}
+
 type UpdateResponse struct {
+	// Return struct for Kandji device update API request
 	DeviceID       string `json:"device_id"`
 	DeviceName     string `json:"device_name"`
 	Model          string `json:"model"`
@@ -56,11 +63,8 @@ type UpdateResponse struct {
 	BlueprintName  string `json:"blueprint_name"`
 }
 
-type User struct {
-	Name string `json:"name,omitempty"`
-}
-
 type DeleteUserPayload struct {
+	// Payload struct for Kandji delete user API request
 	DeleteAllUsers bool   `json:"DeleteAllUsers"`
 	ForceDeletion  bool   `json:"ForceDeletion"`
 	UserName       string `json:"UserName"`
@@ -108,6 +112,7 @@ func ApiRequest(apiVars RequestVars, c *config.Config) (string, error) {
 }
 
 func UpdateBlueprint(sv *shared.SetupVars, c *config.Config) error {
+	// Update the blueprint of the device to the one specified in the SetupVars struct
 	reqVars := RequestVars{
 		Method:   "PATCH",
 		Endpoint: fmt.Sprintf("devices/%s", sv.DeviceID),
@@ -123,6 +128,7 @@ func UpdateBlueprint(sv *shared.SetupVars, c *config.Config) error {
 }
 
 func DeleteUser(sv *shared.SetupVars, c *config.Config, user string) error {
+	// Delete the specified user from the device using the Kandji API
 	payloadStruct := DeleteUserPayload{
 		DeleteAllUsers: false,
 		ForceDeletion:  false,
@@ -149,7 +155,7 @@ func DeleteUser(sv *shared.SetupVars, c *config.Config, user string) error {
 }
 
 func GetComputerDetails(id string, conf *config.Config) (DeviceDetails, error) {
-	// Call the Kandji API to verify the new computer details
+	// Get the details of the device with the specified ID
 	reqVars := RequestVars{
 		Method:   "GET",
 		Endpoint: fmt.Sprintf("devices/%s", id),
@@ -172,6 +178,7 @@ func GetComputerDetails(id string, conf *config.Config) (DeviceDetails, error) {
 }
 
 func (u *User) UnmarshalJSON(data []byte) error {
+	// Custom unmarshal function for User struct to handle empty user strings
 	// Check if the user is an empty string
 	if string(data) == `""` {
 		*u = User{}

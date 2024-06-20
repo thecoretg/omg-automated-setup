@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"os/user"
 	"strings"
 
 	"github.com/thecoretg/omg-user-automation/internal/shared"
@@ -32,16 +33,24 @@ func CreateShortname(fullName string) string {
 }
 
 func CheckRoot() error {
-	// Check if the script is running as root
-	cmd := exec.Command("whoami")
-	output, err := cmd.Output()
+
+	currentUser, err := user.Current()
 	if err != nil {
-		return fmt.Errorf("error checking root: %v", err)
+		return fmt.Errorf("error getting current user: %v", err)
 	}
 
-	if string(output) != "root\n" {
+	if currentUser.Username != "root" {
 		return errors.New("script must be run as root - please run with sudo, or as root")
 	}
 
 	return nil
+}
+
+func CheckUserExists(username string) (bool, error) {
+	_, err := user.Lookup(username)
+	if err != nil {
+		return false, nil
+	}
+
+	return true, nil
 }
