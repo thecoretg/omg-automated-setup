@@ -1,0 +1,2 @@
+# Kandji Removal Scripts
+These scripts are in the Kandji custom script "Mac Setup Automation: Remove" - which is applied to all blueprints except for "Ready to Assign." This is for the purpose of having the setup assistant remove itself once it is done doing it's thing.
