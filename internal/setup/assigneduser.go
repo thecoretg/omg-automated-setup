@@ -59,7 +59,7 @@ func CreateAssignedUser(conf *config.Config, initialDetails *kandji.DeviceDetail
 	}
 
 	// Store post-user creation instructions for end of program
-	loginInstr := "IMPORTANT: Log out of the current user and log in to the spare user to ensure it gets secure token before shutting down."
+	loginInstr := "IMPORTANT: Log out of the current user and log in to the new user to ensure it gets secure token before shutting down."
 	var userInstr string
 	switch exists {
 	case true:
